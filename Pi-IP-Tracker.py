@@ -95,6 +95,7 @@ def isOnNetwork(mac):
 
 #Refresh that dev log
 def refreshDevLog():
+    offlineTimout = 4 #number of minutes till a device is registered as having left the network.
     log=open("IpLog.txt","r")
     ipLog=log.readlines()
     log.close()
@@ -109,7 +110,7 @@ def refreshDevLog():
         currentTime=float(time.strftime("%H"))+float(time.strftime("%M"))/60
         formattedTime=time.strftime("%Y-%m-%d")+' '+time.strftime("%H:%M:%S")
         lastUpdate=float(dev[6][11:13])+float(dev[6][14:16])/60
-        readyForUpdate=currentTime-lastUpdate>0.02 #3 minutes timeout for offline devices
+        readyForUpdate=currentTime-lastUpdate>(offlineTimout/60) #3 minutes timeout for offline devices
         #print("Time since update for",dev[0],"last updated",currentTime-lastUpdate)
         state="offline"
         for ipLine in ipLog:
@@ -150,6 +151,7 @@ def regMonDevs():
         logSplit=line.split(",")
         if isOnNetwork(logSplit[1]):
             logIP(logSplit[0],getIpFromMac(logSplit[1]),logSplit[2][:-1])
+    print("Monitor Macs registered")
     
 
 def logIP( devID, devIP, devDescriptor):
@@ -182,5 +184,5 @@ while True:
     scanLocalNet()
     refreshDevLogMacs()
     refreshDevLog()
-    time.sleep(5)
+    time.sleep(15)
 
