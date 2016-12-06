@@ -1,6 +1,8 @@
 import socket, os, time
 from subprocess import call
 
+#TODO: Make an error handler for when there is no network connection
+
 PORT=5009
 sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(('',PORT))
@@ -52,10 +54,22 @@ def refreshDevLogMacs():
 
 def logMsg(msgType,devID,msg):
     global IP, toPort
-    sendData=msgType+','+devID+','+msg
-    sendThis=sendData.encode('utf-8') #Changing type
-    sock.sendto(sendThis,(IP,toPort))
-    print("Sent message:", sendData)
+    log=open("DeviceLog.txt","r")
+    devLog=log.readlines()
+    log.close()
+    for i in range(0,len(devLog)):
+        line=devLog[i].split(",")
+        if line[1]==devID:
+            sendData=msgType+','+devID+','+msg
+            if line[5]=="online":
+                sendThis=sendData.encode('utf-8') #Changing type
+                sock.sendto(sendThis,(IP,toPort))
+                print("Sent message:", sendData)
+            else:
+                print("Target not available to send this: ",sendData)
+        else:
+            print("Target device not device not found")
+    
 
 def getIpFromMac(mac):
     log=open("IpLog.txt","r")
